@@ -1,23 +1,45 @@
-import logo from './logo.svg';
 import './App.css';
+import { useState, useEffect } from 'react';
+import { storage } from './firebase';
+import { ref, uploadBytes, listAll, getDownloadURL } from 'firebase/storage';
+import { v4 } from 'uuid';
 
 function App() {
+  const [fileUpload, setFileUpload] = useState(null);
+  const [fileList, setFileList] = useState([]);
+
+  const fileListRef = ref(storage, "files/");
+  const uploadFile = () => {
+    if (fileUpload == null) return;
+    const fileRef = ref(storage, `files/${fileUpload.name + v4()}`);
+    uploadBytes(fileRef, fileUpload).then(() => {
+      alert("File Uploaded");
+    });
+  };
+
+  useEffect(() => {
+    listAll(fileListRef).then((response) => {
+      response.items.forEach((item) => {
+        getDownloadURL(item).then((url) => {
+          setFileList((prev) => [...prev, url]);
+        });
+      });
+    });
+  }, []);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <input 
+      type="file" 
+      onChange={(event) => {
+        setFileUpload(event.target.files[0]);
+      }}
+      />
+      <button onClick={uploadFile}>Upload File</button>
+
+      {fileList.map((url) => {
+        return <img src={url}/>
+      })}
     </div>
   );
 }
