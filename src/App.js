@@ -29,6 +29,8 @@ function App() {
 
   return (
     <div className="App">
+      <h1>File Uploading</h1>
+      <br />
       <input 
       type="file" 
       onChange={(event) => {
